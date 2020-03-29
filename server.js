@@ -4,7 +4,7 @@ const env = require('dotenv').config()
 
 const app = express();
 const FB = require('./fb')
-const routes = require('./routes')
+const routes = require('./routes/fb')
 
 app.use(session({
    secret: 'keyboard cat', cookie: { maxAge: 60000 },

@@ -1,11 +1,19 @@
-
 var FB = require('../fb');
+// let express = require('express')
+// let app = express()
+// let bodyParser = require('body-parser');
+// let router = express.Router();
+// let cors = require('cors');
+// app.use(cors());
+// app.use('/api', bodyParser.json(), router);   //[use json]
+// app.use('/api', bodyParser.urlencoded({ extended: false }), router);
+var request = require('request');
 
 FB.options({
     appId: process.env.APP_ID,
     appSecret: process.env.APP_SECRET,
     scope: 'user_friends, email, user_birthday, user_posts, user_status, user_photos, user_gender, user_likes, user_link',
-    redirect_uri: 'http://localhost/login/callback'
+    redirect_uri: 'http://localhost/api/auth/facebook/login/callback'
 });
 
 function getFacebookLoginUrl() {
@@ -14,39 +22,18 @@ function getFacebookLoginUrl() {
         '&redirect_uri=' + encodeURIComponent(FB.options('redirect_uri')) +
         '&scope=' + encodeURIComponent(FB.options('scope'));
 }
-
-exports.index = function (req, res) {
-    let out = `<html><body>
-                    <h1>Facebook APIs </h1>
-                    <ul>
-                        <li><a href=/me>Me</a></li>
-                        <li><a href=/feed>Feed</a></li>
-                        <li><a href=/friends>Friend count</a></li>
-                        <li><a href=/logout>Logout</a></li>
-                    </ul>                    
-                </body></html>`
-
-
-    var accessToken
-    if (req.session)
-        accessToken = req.session.access_token;
-    if (!accessToken) {
-        res.send('<h1>Facebook Login</h1>Click to: <a href=' + getFacebookLoginUrl() + '> Login</a>')
-    } else {
-        res.send(out);
-    }
-};
-
+exports.loginUrl = function (req, res) {
+    res.send(getFacebookLoginUrl());
+}
 exports.loginCallback = function (req, res, next) {
     var code = req.query.code,
         accessToken = '',
         expires = 0;
-
     if (req.query.error) {
         // user disallowed the app
         return res.send('Error occurred');
     } else if (!code) {
-        return res.redirect('/');
+        return res.redirect('http://localhost:3000');
     }
 
     // exchange code for access token
@@ -67,7 +54,7 @@ exports.loginCallback = function (req, res, next) {
         // todo: extend access token
         req.session.access_token = accessToken;
         req.session.expires = expires;
-        res.redirect('/');
+        res.redirect('http://localhost:3000');
     });
 };
 
